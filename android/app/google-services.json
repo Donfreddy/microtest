@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "365915155386",
+    "project_id": "microtest-cd949",
+    "storage_bucket": "microtest-cd949.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:365915155386:android:ddb5ca4fe2e7b003904b83",
+        "android_client_info": {
+          "package_name": "com.example.microtest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "365915155386-dqokn8k8cghpotfr8lkep436h988eomn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxxLpY4z1ESD1WUbuH3hX6YoA_v2CaVsE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "365915155386-dqokn8k8cghpotfr8lkep436h988eomn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
