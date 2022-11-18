@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class LoginPage extends StatefulWidget {
+  static const routeName = '/login';
+
   const LoginPage({Key? key}) : super(key: key);
 
   @override
@@ -107,7 +109,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ],
       ),
-      margin: EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 20),
       child: TextField(
         obscureText: isPassword,
         style: GoogleFonts.montserrat(
@@ -118,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
         decoration: InputDecoration(
-          contentPadding: EdgeInsets.symmetric(vertical: 25),
+          contentPadding: const EdgeInsets.symmetric(vertical: 25),
           hintText: hintText,
           hintStyle: const TextStyle(
             color: Color(0xffA6B0BD),
@@ -149,7 +151,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget _loginBtn() {
     return Container(
       width: double.infinity,
-      margin: EdgeInsets.only(top: 20, bottom: 50),
+      margin: const EdgeInsets.only(top: 20, bottom: 50),
       decoration: const BoxDecoration(
           color: Color(0xff008FFF),
           borderRadius: BorderRadius.all(Radius.circular(50)),

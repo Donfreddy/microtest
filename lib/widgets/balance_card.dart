@@ -21,16 +21,16 @@ class BalanceCard extends StatelessWidget {
                   color: shadowColor.withOpacity(0.1),
                   spreadRadius: 1,
                   blurRadius: 1,
-                  offset: Offset(1, 1), // changes position of shadow
+                  offset: const Offset(1, 1), // changes position of shadow
                 ),
               ],
               image: DecorationImage(
-                colorFilter: new ColorFilter.mode(
+                colorFilter: ColorFilter.mode(
                     Colors.black.withOpacity(0.2), BlendMode.dstATop),
-                image: AssetImage('assets/images/bgcard.png'),
+                image: const AssetImage('assets/images/bgcard.png'),
               )),
           child: Column(
-            children: [
+            children: const [
               SizedBox(
                 height: 25,
               ),
@@ -59,12 +59,12 @@ class BalanceCard extends StatelessWidget {
             left: 0,
             right: 0,
             child: Container(
-                padding: EdgeInsets.all(5),
+                padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                     color: secondary,
                     shape: BoxShape.circle,
                     border: Border.all()),
-                child: Icon(Icons.add)))
+                child: const Icon(Icons.add)))
       ],
     );
   }

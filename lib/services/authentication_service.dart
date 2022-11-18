@@ -1,16 +1,21 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 
+import '../common/constant.dart';
+
 class AuthenticationService {
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   User? user;
 
   Future<User?> loginWithEmail(
       {required String email, required String password}) async {
     try {
-      var userCredential = await _firebaseAuth.signInWithEmailAndPassword(
+      var userCredential = await firebaseAuth.signInWithEmailAndPassword(
           email: email, password: password);
       user = userCredential.user;
+      if (kDebugMode) {
+        print(userCredential);
+        print(user);
+      }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         debugPrint('No user found for that email.');
@@ -22,6 +27,12 @@ class AuthenticationService {
   }
 
   Future<void> signOut() async {
-    await _firebaseAuth.signOut();
+    try {
+      await firebaseAuth.signOut();
+    } catch (e) {
+      if (kDebugMode) {
+        debugPrint(e.toString());
+      }
+    }
   }
 }
