@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
+import '../services/authentication.dart';
 
 class LoginPage extends StatefulWidget {
-  static const routeName = '/login';
-
   const LoginPage({Key? key}) : super(key: key);
 
   @override
@@ -11,68 +12,46 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SizedBox(
-        width: double.infinity,
+      body: SingleChildScrollView(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            _logo(),
             _logoText(),
-            _inputField(
-                const Icon(Icons.person_outline,
-                    size: 30, color: Color(0xffA6B0BD)),
-                "Username",
-                false),
-            _inputField(
-                const Icon(Icons.lock_outline,
-                    size: 30, color: Color(0xffA6B0BD)),
-                "Password",
-                true),
-            _loginBtn()
+            Form(
+                key: _formKey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                child: Column(
+                  children: [
+                    _inputField(
+                        _emailController,
+                        const Icon(
+                          Icons.person_outline,
+                          size: 30,
+                          color: Color(0xffA6B0BD),
+                        ),
+                        "Username",
+                        false),
+                    _inputField(
+                        _passwordController,
+                        const Icon(
+                          Icons.lock_outline,
+                          size: 30,
+                          color: Color(0xffA6B0BD),
+                        ),
+                        "Password",
+                        true),
+                    _loginBtn()
+                  ],
+                )),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _logo() {
-    return Container(
-      margin: const EdgeInsets.only(top: 100),
-      child: Stack(
-        children: [
-          Positioned(
-              left: -50,
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0xff00bfdb),
-                ),
-              )),
-          Positioned(
-              child: Container(
-            width: 100,
-            height: 100,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0xff008FFF),
-            ),
-          )),
-          Positioned(
-            left: 50,
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Color(0xff00227E),
-              ),
-            ),
-          )
-        ],
       ),
     );
   }
@@ -84,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
         "microtest",
         style: GoogleFonts.nunito(
           textStyle: const TextStyle(
-            fontSize: 54,
+            fontSize: 34,
             fontWeight: FontWeight.w800,
             color: Color(0xff000912),
             letterSpacing: 10,
@@ -94,23 +73,26 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _inputField(Icon prefixIcon, String hintText, bool isPassword) {
+  Widget _inputField(TextEditingController controller, Icon prefixIcon,
+      String hintText, bool isPassword) {
     return Container(
+      padding: const EdgeInsets.all(20),
       decoration: const BoxDecoration(
         borderRadius: BorderRadius.all(
           Radius.circular(50),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black,
-            blurRadius: 25,
+            color: Colors.white10,
+            blurRadius: 5,
             offset: Offset(0, 5),
-            spreadRadius: -25,
+            spreadRadius: 7,
           ),
         ],
       ),
       margin: const EdgeInsets.only(bottom: 20),
       child: TextField(
+        controller: controller,
         obscureText: isPassword,
         style: GoogleFonts.montserrat(
           textStyle: const TextStyle(
@@ -164,7 +146,11 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ]),
       child: TextButton(
-        onPressed: () => {print('Sign in pressed.')},
+        onPressed: () {
+          context.read<AuthenticationProvider>().signIn(context,
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim());
+        },
         // padding: EdgeInsets.symmetric(vertical: 25),
         child: Text(
           "SIGN IN",
@@ -179,5 +165,12 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }

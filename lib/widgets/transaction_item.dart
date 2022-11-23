@@ -5,7 +5,7 @@ import 'avatar_image.dart';
 
 class TransactionItem extends StatelessWidget {
   const TransactionItem(this.data, {Key? key, this.onTap}) : super(key: key);
-  final dynamic data;
+  final Map<String, dynamic> data;
   final GestureTapCallback? onTap;
 
   @override
@@ -34,7 +34,7 @@ class TransactionItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 AvatarImage(
-                  data['image'],
+                  data['provider_logo'],
                   isSVG: false,
                   width: 35,
                   height: 35,
@@ -48,31 +48,35 @@ class TransactionItem extends StatelessWidget {
                       Row(
                         children: <Widget>[
                           Expanded(
-                              child: Text(data['name'],
+                              child: Text(data['status'] ?? '',
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700))),
                           const SizedBox(width: 5),
-                          Text(data['price'],
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.w600))
+                          Text(
+                            '${data['amount']} FCFA',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          )
                         ],
                       ),
                       const SizedBox(height: 2),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
-                          Text(data['date'],
+                          const Text("",
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey)),
+                              style:
+                                  TextStyle(fontSize: 12, color: Colors.grey)),
                           Container(
-                            child: data['type'] == 1
+                            child: data['type'] == 'cashint'
                                 ? const Icon(
                                     Icons.download_rounded,
                                     color: green,

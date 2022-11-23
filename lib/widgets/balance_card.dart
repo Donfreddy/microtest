@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:microtest/common/constant.dart';
 
 import '../theme/colors.dart';
 
@@ -7,6 +9,8 @@ class BalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String userId = firebaseAuth.currentUser!.uid;
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -30,27 +34,38 @@ class BalanceCard extends StatelessWidget {
                 image: const AssetImage('assets/images/bgcard.png'),
               )),
           child: Column(
-            children: const [
-              SizedBox(
+            children: [
+              const SizedBox(
                 height: 25,
               ),
-              Text(
+              const Text(
                 "Your Balance",
                 style: TextStyle(
                   color: Colors.grey,
                   fontSize: 14,
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
-              Text(
-                "\$860,500.00",
-                style: TextStyle(
-                    color: secondary,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600),
-              ),
+              StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                  stream: databaseReference
+                      .collection('users')
+                      .doc(userId)
+                      .snapshots(),
+                  builder: (context, snapshot) {
+                    if(!snapshot.hasData){
+                      return const Text('data');
+                    }
+                    return  Text(
+                      "${snapshot.data!['balance']} FCFA",
+                      style: const TextStyle(
+                        color: secondary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    );
+                  }),
             ],
           ),
         ),

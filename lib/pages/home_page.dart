@@ -1,5 +1,7 @@
 import 'package:badges/badges.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:microtest/common/constant.dart';
 import 'package:microtest/data/json.dart';
 import 'package:microtest/widgets/avatar_image.dart';
 
@@ -55,15 +57,15 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
-                  "Hello Sangvaleap,",
-                  style: TextStyle(color: Colors.grey, fontSize: 13),
+                  "Hello ${firebaseAuth.currentUser?.email},",
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 5,
                 ),
-                Text(
+                const Text(
                   "Welcome Back!",
                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
                 ),
@@ -137,23 +139,6 @@ class _HomePageState extends State<HomePage> {
             height: 25,
           ),
           Container(
-              padding: const EdgeInsets.only(left: 20),
-              alignment: Alignment.centerLeft,
-              child: const Text(
-                "Send Again",
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-              )),
-          const SizedBox(
-            height: 15,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 15),
-            child: getRecentUsers(),
-          ),
-          const SizedBox(
-            height: 25,
-          ),
-          Container(
               padding: const EdgeInsets.only(left: 20, right: 15),
               alignment: Alignment.centerLeft,
               child: Row(
@@ -189,8 +174,8 @@ class _HomePageState extends State<HomePage> {
   getActions() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        const SizedBox(
+      children: const [
+        SizedBox(
           width: 15,
         ),
         Expanded(
@@ -199,7 +184,7 @@ class _HomePageState extends State<HomePage> {
           icon: Icons.send_rounded,
           bgColor: green,
         )),
-        const SizedBox(
+        SizedBox(
           width: 15,
         ),
         Expanded(
@@ -207,13 +192,13 @@ class _HomePageState extends State<HomePage> {
                 title: "Request",
                 icon: Icons.arrow_circle_down_rounded,
                 bgColor: yellow)),
-        const SizedBox(
+        SizedBox(
           width: 15,
         ),
         Expanded(
             child: ActionBox(
                 title: "More", icon: Icons.widgets_rounded, bgColor: purple)),
-        const SizedBox(
+        SizedBox(
           width: 15,
         ),
       ],
@@ -266,11 +251,40 @@ class _HomePageState extends State<HomePage> {
   }
 
   getTransactions() {
-    return Column(
-        children: List.generate(
-            transactions.length,
-            (index) => Container(
-                margin: const EdgeInsets.only(right: 15),
-                child: TransactionItem(transactions[index]))));
+    String userId = firebaseAuth.currentUser!.uid;
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      stream: databaseReference
+          .collection('users')
+          .doc(userId)
+          .collection('transactions')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+        if (!snapshot.hasData) {
+          return const Padding(
+            padding: EdgeInsets.only(top: 20),
+            child: Text(
+              'You have not made a transaction yet.',
+              style: TextStyle(color: Colors.grey),
+            ),
+          );
+        }
+        List<Map<String, dynamic>> data =
+            snapshot.data!.docs.map((e) => e.data()).toList();
+        return ListView.builder(
+          shrinkWrap: true,
+          itemCount: data.length,
+          itemBuilder: (context, i) {
+            print(data[i]);
+            return Container(
+              margin: const EdgeInsets.only(right: 15),
+              child: TransactionItem(data[i]),
+            );
+          },
+        );
+      },
+    );
   }
 }

@@ -5,8 +5,6 @@ import '../widgets/bottombar_item.dart';
 import 'home_page.dart';
 
 class Home extends StatefulWidget {
-  static const routeName = '/home';
-
   const Home({Key? key}) : super(key: key);
 
   @override
