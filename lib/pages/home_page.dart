@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:badges/badges.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -117,7 +118,7 @@ class _HomePageState extends State<HomePage> {
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  const BalanceCard(),
+                  BalanceCard(onTap: () => buildDepositMoneyModal(context)),
                   Positioned(
                       top: 100,
                       left: 0,
@@ -134,7 +135,7 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(
             height: 35,
           ),
-          getActions(),
+          getActions(context),
           const SizedBox(
             height: 25,
           ),
@@ -171,11 +172,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  getActions() {
+  getActions(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: const [
-        SizedBox(
+      children: [
+        const SizedBox(
           width: 15,
         ),
         Expanded(
@@ -183,22 +184,30 @@ class _HomePageState extends State<HomePage> {
           title: "Send",
           icon: Icons.send_rounded,
           bgColor: green,
+          onTap: () {},
         )),
-        SizedBox(
+        const SizedBox(
+          width: 15,
+        ),
+        Expanded(
+          child: ActionBox(
+            title: "Request",
+            icon: Icons.arrow_circle_down_rounded,
+            bgColor: yellow,
+            onTap: () => buildRequestMoneyModal(context),
+          ),
+        ),
+        const SizedBox(
           width: 15,
         ),
         Expanded(
             child: ActionBox(
-                title: "Request",
-                icon: Icons.arrow_circle_down_rounded,
-                bgColor: yellow)),
-        SizedBox(
-          width: 15,
-        ),
-        Expanded(
-            child: ActionBox(
-                title: "More", icon: Icons.widgets_rounded, bgColor: purple)),
-        SizedBox(
+          title: "More",
+          icon: Icons.widgets_rounded,
+          bgColor: purple,
+          onTap: () {},
+        )),
+        const SizedBox(
           width: 15,
         ),
       ],
@@ -287,4 +296,164 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
+}
+
+Future buildDepositMoneyModal(BuildContext context) {
+  return showModal(
+    context: context,
+    configuration: const FadeScaleTransitionConfiguration(
+      transitionDuration: Duration(
+        milliseconds: 300,
+      ),
+    ),
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      title: const Text(
+        "Depots sur un compte",
+        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
+      ),
+      titlePadding: const EdgeInsets.all(20),
+      contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const TextField(
+            textInputAction: TextInputAction.next,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'Montant',
+            ),
+          ),
+          const TextField(
+            textInputAction: TextInputAction.done,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: 'Numero de telephone',
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Colors.red.shade300),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Fermer'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(appBgColorPrimary),
+                  ),
+                  onPressed: () {},
+                  child: const Text('Deposer'),
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    ),
+  );
+}
+
+Future buildRequestMoneyModal(BuildContext context) {
+  List<DropdownMenuItem<String>> menuItems = [
+    const DropdownMenuItem(value: "Orange", child: Text("Orange")),
+    const DropdownMenuItem(value: "MTN", child: Text("MTN")),
+  ];
+
+  String selectedValue = "Orange";
+
+  return showModal(
+    context: context,
+    configuration: const FadeScaleTransitionConfiguration(
+      transitionDuration: Duration(
+        milliseconds: 300,
+      ),
+    ),
+    builder: (context) => StatefulBuilder(
+      builder: (context, setState) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        title: const Text(
+          "Retirer des fonds",
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
+        ),
+        titlePadding: const EdgeInsets.all(20),
+        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Expanded(child: Text('Recevoir dans:')),
+                DropdownButton(
+                  value: selectedValue,
+                  items: menuItems,
+                  onChanged: (String? value) {
+                    if (value != null && selectedValue != value) {
+                      selectedValue = value;
+                      setState(() {});
+                    }
+                  },
+                ),
+              ],
+            ),
+            const TextField(
+              textInputAction: TextInputAction.next,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Montant',
+              ),
+            ),
+            const TextField(
+              textInputAction: TextInputAction.done,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Numero de telephone',
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStateProperty.all<Color>(Colors.red.shade300),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('Fermer'),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    style: ButtonStyle(
+                      backgroundColor:
+                          MaterialStateProperty.all<Color>(appBgColorPrimary),
+                    ),
+                    onPressed: () {},
+                    child: const Text('Demander'),
+                  ),
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    ),
+  );
 }
