@@ -1,10 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
-import '../common/constant.dart';
+class FirestoreProvider {
+  //FirebaseFirestore instance
+  final FirebaseFirestore db;
 
-class MicroTestService {
-  Future<void> requestMoney(String userId, int amount, String provider) async {
+  //Constructor to initialize the FirebaseAuth instance
+  FirestoreProvider(this.db);
+
+  // REQUEST MONEY METHOD
+  Future<void> requestMoney(
+      String userId, int amount, int phone, String provider) async {
     const maxAmount = 10000;
 
     // get current balance
@@ -19,10 +25,11 @@ class MicroTestService {
 
         await addTransaction(userId, {
           'amount': newBalance,
+          'phone': phone,
           'provider': provider,
           'date': DateTime.now(),
           'status': 'complete',
-          'type': 'cash out',
+          'type': 'cashout',
         });
       } else {
         //
@@ -33,30 +40,43 @@ class MicroTestService {
         'provider': provider,
         'date': DateTime.now(),
         'status': 'pending',
-        'type': 'cash out',
+        'type': 'cashout',
       });
     }
   }
 
-  Future<DocumentSnapshot> getAllTransactions(String userId) async {
-    return databaseReference
+  // DEPOSIT MONEY
+  Future<void> deposit(String userId, int amount, int phone) async {
+    // get current balance
+    var currentBalance = await getBalance(userId);
+
+    final newBalance = currentBalance + amount;
+
+    await db.collection('Users').doc(userId).update({
+      'balance': newBalance,
+    });
+
+    await addTransaction(userId, {
+      'amount': amount,
+      'date': DateTime.now(),
+      'status': 'complete',
+      'type': 'cashint',
+    });
+  }
+
+  // GET ALL TRANSACTIONS METHOD
+  Stream<QuerySnapshot<Map<String, dynamic>>> getAllTransactions(
+      String userId) {
+    return db
         .collection('users')
         .doc(userId)
         .collection('Transactions')
-        .doc()
-        .get();
+        .snapshots();
   }
 
+  // GET BALANCE METHOD
   Future<int> getBalance(String userId) async {
-    final response = await databaseReference
-        .collection('Users')
-        .doc(userId)
-        .get()
-        .catchError((e) {
-      if (kDebugMode) {
-        print(e);
-      }
-    });
+    final response = await db.collection('users').doc(userId).get();
 
     if (kDebugMode) {
       print(response);
@@ -65,21 +85,23 @@ class MicroTestService {
     return response['balance'] as int;
   }
 
+  // GET USER DocumentSnapshot METHOD
+  Stream<DocumentSnapshot<Map<String, dynamic>>> getUserDoc(String userId) {
+    return db.collection('users').doc(userId).snapshots();
+  }
+
+  // ADD TRANSACTION METHOD
   Future<void> addTransaction(String userId, Map<String, dynamic> data) async {
-    await databaseReference
+    await db
         .collection('Users')
         .doc(userId)
         .collection('Transactions')
-        .add(data)
-        .catchError((e) {
-      if (kDebugMode) {
-        print(e);
-      }
-    });
+        .add(data);
   }
 
+  // UPDATE BALANCE METHOD
   Future<void> updateBalance(String userId, int newBalance) async {
-    await databaseReference.collection('Users').doc(userId).update({
+    await db.collection('Users').doc(userId).update({
       'balance': newBalance,
     }).catchError((e) {
       if (kDebugMode) {

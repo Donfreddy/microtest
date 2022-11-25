@@ -5,7 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:microtest/pages/home.dart';
 import 'package:microtest/pages/login_page.dart';
-import 'package:microtest/services/authentication.dart';
+import 'package:microtest/providers/authentication.dart';
+import 'package:microtest/providers/firestore.dart';
 import 'package:provider/provider.dart';
 
 import 'common/constant.dart';
@@ -36,7 +37,10 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<AuthenticationProvider>(
-          create: (_) => AuthenticationProvider(FirebaseAuth.instance),
+          create: (_) => AuthenticationProvider(firebaseAuth),
+        ),
+        Provider<FirestoreProvider>(
+          create: (_) => FirestoreProvider(databaseReference),
         ),
         StreamProvider(
           create: (context) => context.read<AuthenticationProvider>().authState,

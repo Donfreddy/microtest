@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:microtest/common/constant.dart';
+import 'package:microtest/providers/firestore.dart';
+import 'package:provider/provider.dart';
 
 import '../theme/colors.dart';
 
@@ -53,23 +55,21 @@ class BalanceCard extends StatelessWidget {
                   height: 10,
                 ),
                 StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                    stream: databaseReference
-                        .collection('users')
-                        .doc(userId)
-                        .snapshots(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return const Text('data');
-                      }
-                      return Text(
-                        "${snapshot.data!['balance']} FCFA",
-                        style: const TextStyle(
-                          color: secondary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      );
-                    }),
+                  stream: context.read<FirestoreProvider>().getUserDoc(userId),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Text('data');
+                    }
+                    return Text(
+                      "${snapshot.data!['balance']} FCFA",
+                      style: const TextStyle(
+                        color: secondary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
           ),

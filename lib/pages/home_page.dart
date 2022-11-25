@@ -4,7 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:microtest/common/constant.dart';
 import 'package:microtest/data/json.dart';
+import 'package:microtest/providers/firestore.dart';
 import 'package:microtest/widgets/avatar_image.dart';
+import 'package:provider/provider.dart';
 
 import '../theme/colors.dart';
 import '../widgets/action_box.dart';
@@ -135,7 +137,7 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(
             height: 35,
           ),
-          getActions(context),
+          getActions(),
           const SizedBox(
             height: 25,
           ),
@@ -172,7 +174,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  getActions(BuildContext context) {
+  getActions() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -262,11 +264,7 @@ class _HomePageState extends State<HomePage> {
   getTransactions() {
     String userId = firebaseAuth.currentUser!.uid;
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-      stream: databaseReference
-          .collection('users')
-          .doc(userId)
-          .collection('transactions')
-          .snapshots(),
+      stream: context.read<FirestoreProvider>().getAllTransactions(userId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();
@@ -354,7 +352,13 @@ Future buildDepositMoneyModal(BuildContext context) {
                     backgroundColor:
                         MaterialStateProperty.all<Color>(appBgColorPrimary),
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    context.read<FirestoreProvider>().deposit(
+                          firebaseAuth.currentUser!.uid,
+                          0,
+                          0,
+                        );
+                  },
                   child: const Text('Deposer'),
                 ),
               ),
@@ -445,7 +449,14 @@ Future buildRequestMoneyModal(BuildContext context) {
                       backgroundColor:
                           MaterialStateProperty.all<Color>(appBgColorPrimary),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      context.read<FirestoreProvider>().requestMoney(
+                            firebaseAuth.currentUser!.uid,
+                            0,
+                            0,
+                            selectedValue,
+                          );
+                    },
                     child: const Text('Demander'),
                   ),
                 ),
