@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/authentication.dart';
@@ -19,38 +20,40 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            _logoText(),
-            Form(
-                key: _formKey,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
-                child: Column(
-                  children: [
-                    _inputField(
-                        _emailController,
-                        const Icon(
-                          Icons.person_outline,
-                          size: 30,
-                          color: Color(0xffA6B0BD),
-                        ),
-                        "Username",
-                        false),
-                    _inputField(
-                        _passwordController,
-                        const Icon(
-                          Icons.lock_outline,
-                          size: 30,
-                          color: Color(0xffA6B0BD),
-                        ),
-                        "Password",
-                        true),
-                    _loginBtn()
-                  ],
-                )),
-          ],
+      body: LoaderOverlay(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _logoText(),
+              Form(
+                  key: _formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: Column(
+                    children: [
+                      _inputField(
+                          _emailController,
+                          const Icon(
+                            Icons.person_outline,
+                            size: 30,
+                            color: Color(0xffA6B0BD),
+                          ),
+                          "Username",
+                          false),
+                      _inputField(
+                          _passwordController,
+                          const Icon(
+                            Icons.lock_outline,
+                            size: 30,
+                            color: Color(0xffA6B0BD),
+                          ),
+                          "Password",
+                          true),
+                      _loginBtn()
+                    ],
+                  )),
+            ],
+          ),
         ),
       ),
     );
@@ -147,6 +150,7 @@ class _LoginPageState extends State<LoginPage> {
           ]),
       child: TextButton(
         onPressed: () {
+          context.loaderOverlay.show();
           context.read<AuthenticationProvider>().signIn(context,
               email: _emailController.text.trim(),
               password: _passwordController.text.trim());

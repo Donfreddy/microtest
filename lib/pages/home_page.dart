@@ -2,6 +2,7 @@ import 'package:animations/animations.dart';
 import 'package:badges/badges.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 import 'package:microtest/common/constant.dart';
 import 'package:microtest/data/json.dart';
 import 'package:microtest/providers/firestore.dart';
@@ -27,7 +28,9 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       // appBar: getAppBar(),
-      body: getBody(),
+      body: LoaderOverlay(
+        child: getBody(),
+      ),
     );
   }
 
@@ -388,13 +391,14 @@ Future buildDepositMoneyModal(BuildContext context) {
                 MaterialStateProperty.all<Color>(appBgColorPrimary),
           ),
           onPressed: () {
-            if (_formKey.currentState!.validate()) {
+            if (!_formKey.currentState!.validate()) {
               context.read<FirestoreProvider>().deposit(
                     firebaseAuth.currentUser!.uid,
                     amount,
                     phone,
                   );
               Navigator.of(context).pop();
+              context.loaderOverlay.show();
             }
           },
           child: const Text('Deposer'),

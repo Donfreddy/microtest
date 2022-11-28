@@ -4,6 +4,7 @@ import 'package:microtest/common/constant.dart';
 import 'package:microtest/providers/firestore.dart';
 import 'package:provider/provider.dart';
 
+import '../api/api_service.dart';
 import '../theme/colors.dart';
 
 class BalanceCard extends StatelessWidget {
@@ -19,7 +20,10 @@ class BalanceCard extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         GestureDetector(
-          onTap: onTap,
+          // onTap: onTap,
+          onTap: () async {
+            await ApiService.refreshToken();
+          },
           child: Container(
             height: 120,
             width: double.infinity,

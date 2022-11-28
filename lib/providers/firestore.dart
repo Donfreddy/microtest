@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:microtest/api/api_service.dart';
 import 'package:microtest/common/constant.dart';
 
 class FirestoreProvider {
@@ -19,20 +20,32 @@ class FirestoreProvider {
 
     if (amount < maxAmount) {
       if (amount < currentBalance) {
+        // make payment
+        var data = {
+          "amount": "$amount",
+          "from": "237$phone",
+          "description": "Test",
+          "external_reference": DateTime.now().toIso8601String()
+        };
+        var paymentResponse = await ApiService.makePayment(data);
+
+        await ApiService.getPaymentStatus(paymentResponse['reference'])
+            .then((response) => {});
+
         final newBalance = currentBalance - amount;
 
         // process transaction and update user balance
-        await updateBalance(userId, newBalance);
-
-        await addTransaction(userId, {
-          'amount': amount,
-          'phone': phone,
-          'provider': provider,
-          'provider_logo': provider == 'Orange' ? orangeLogo : mtnLogo,
-          'date': DateTime.now(),
-          'status': 'complete',
-          'type': 'cashout',
-        });
+        // await updateBalance(userId, newBalance);
+        //
+        // await addTransaction(userId, {
+        //   'amount': amount,
+        //   'phone': phone,
+        //   'provider': provider,
+        //   'provider_logo': provider == 'Orange' ? orangeLogo : mtnLogo,
+        //   'date': DateTime.now(),
+        //   'status': 'complete',
+        //   'type': 'cashout',
+        // });
       } else {
         //
       }

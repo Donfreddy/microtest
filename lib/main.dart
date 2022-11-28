@@ -9,6 +9,7 @@ import 'package:microtest/providers/authentication.dart';
 import 'package:microtest/providers/firestore.dart';
 import 'package:provider/provider.dart';
 
+import 'api/api_service.dart';
 import 'common/constant.dart';
 
 void main() async {
@@ -25,6 +26,9 @@ void main() async {
 
   // Only portrait
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  // get token
+  await ApiService.refreshToken();
 
   runApp(const MyApp());
 }

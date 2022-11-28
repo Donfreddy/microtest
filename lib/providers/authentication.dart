@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 
 class AuthenticationProvider {
   final FirebaseAuth firebaseAuth;
@@ -18,12 +19,13 @@ class AuthenticationProvider {
     try {
       await firebaseAuth.signInWithEmailAndPassword(
           email: email, password: password);
+      context.loaderOverlay.hide();
     } on FirebaseAuthException catch (e) {
+      context.loaderOverlay.hide();
       SnackBar snackBar = SnackBar(
         content: Text(e.message ?? e.code),
         duration: const Duration(seconds: 5),
       );
-
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
