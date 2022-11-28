@@ -33,13 +33,23 @@ class TransactionItem extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                AvatarImage(
-                  data['provider_logo'],
-                  isSVG: false,
-                  width: 35,
-                  height: 35,
-                  radius: 50,
-                ),
+                data['provider_logo'] != ''
+                    ? AvatarImage(
+                        data['provider_logo'],
+                        isSVG: false,
+                        isAsset: true,
+                        width: 35,
+                        height: 35,
+                        radius: 50,
+                      )
+                    : const CircleAvatar(
+                        backgroundColor: appBgColorPrimary,
+                        child: Text(
+                          'D',
+                          style: TextStyle(
+                              color: secondary, fontWeight: FontWeight.bold),
+                        ),
+                      ),
                 const SizedBox(width: 20),
                 Expanded(
                   child: Column(
@@ -48,7 +58,7 @@ class TransactionItem extends StatelessWidget {
                       Row(
                         children: <Widget>[
                           Expanded(
-                              child: Text(data['status'] ?? '',
+                              child: Text(data['phone'].toString(),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(
@@ -70,11 +80,21 @@ class TransactionItem extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
-                          const Text("",
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style:
-                                  TextStyle(fontSize: 12, color: Colors.grey)),
+                          Text(
+                            "${DateTime.parse(data['date'].toDate().toString())}"
+                                .split(" ")[0],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.grey),
+                          ),
+                          Text(
+                            "${data['status']}",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.grey),
+                          ),
                           Container(
                             child: data['type'] == 'cashint'
                                 ? const Icon(

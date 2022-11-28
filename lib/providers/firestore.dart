@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:microtest/common/constant.dart';
 
 class FirestoreProvider {
   //FirebaseFirestore instance
@@ -24,9 +25,10 @@ class FirestoreProvider {
         await updateBalance(userId, newBalance);
 
         await addTransaction(userId, {
-          'amount': newBalance,
+          'amount': amount,
           'phone': phone,
           'provider': provider,
+          'provider_logo': provider == 'Orange' ? orangeLogo : mtnLogo,
           'date': DateTime.now(),
           'status': 'complete',
           'type': 'cashout',
@@ -37,7 +39,9 @@ class FirestoreProvider {
     } else {
       await addTransaction(userId, {
         'amount': amount,
+        'phone': phone,
         'provider': provider,
+        'provider_logo': provider == 'Orange' ? orangeLogo : mtnLogo,
         'date': DateTime.now(),
         'status': 'pending',
         'type': 'cashout',
@@ -52,14 +56,15 @@ class FirestoreProvider {
 
     final newBalance = currentBalance + amount;
 
-    await db.collection('Users').doc(userId).update({
-      'balance': newBalance,
-    });
+    await updateBalance(userId, newBalance);
 
     await addTransaction(userId, {
       'amount': amount,
+      'phone': phone,
       'date': DateTime.now(),
       'status': 'complete',
+      'provider': '',
+      'provider_logo': '',
       'type': 'cashint',
     });
   }
@@ -70,7 +75,7 @@ class FirestoreProvider {
     return db
         .collection('users')
         .doc(userId)
-        .collection('Transactions')
+        .collection('transactions')
         .snapshots();
   }
 
@@ -93,20 +98,14 @@ class FirestoreProvider {
   // ADD TRANSACTION METHOD
   Future<void> addTransaction(String userId, Map<String, dynamic> data) async {
     await db
-        .collection('Users')
+        .collection('users')
         .doc(userId)
-        .collection('Transactions')
+        .collection('transactions')
         .add(data);
   }
 
   // UPDATE BALANCE METHOD
   Future<void> updateBalance(String userId, int newBalance) async {
-    await db.collection('Users').doc(userId).update({
-      'balance': newBalance,
-    }).catchError((e) {
-      if (kDebugMode) {
-        print(e);
-      }
-    });
+    await db.collection('users').doc(userId).update({'balance': newBalance});
   }
 }

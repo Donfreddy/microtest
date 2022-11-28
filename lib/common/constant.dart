@@ -7,3 +7,7 @@ final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 
 // hive
 const String userBoxName = 'USER';
+
+// Provider logo (PNG)
+const String orangeLogo = 'assets/images/Orange-Money.png';
+const String mtnLogo = 'assets/images/Mtn-MoMo.png';

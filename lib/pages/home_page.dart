@@ -269,7 +269,7 @@ class _HomePageState extends State<HomePage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const CircularProgressIndicator();
         }
-        if (!snapshot.hasData) {
+        if (!snapshot.hasData || !snapshot.data!.docs.isNotEmpty) {
           return const Padding(
             padding: EdgeInsets.only(top: 20),
             child: Text(
@@ -281,10 +281,10 @@ class _HomePageState extends State<HomePage> {
         List<Map<String, dynamic>> data =
             snapshot.data!.docs.map((e) => e.data()).toList();
         return ListView.builder(
+          controller: ScrollController(),
           shrinkWrap: true,
           itemCount: data.length,
           itemBuilder: (context, i) {
-            print(data[i]);
             return Container(
               margin: const EdgeInsets.only(right: 15),
               child: TransactionItem(data[i]),
@@ -297,6 +297,10 @@ class _HomePageState extends State<HomePage> {
 }
 
 Future buildDepositMoneyModal(BuildContext context) {
+  final _formKey = GlobalKey<FormState>();
+  int amount = 0;
+  int phone = 0;
+
   return showModal(
     context: context,
     configuration: const FadeScaleTransitionConfiguration(
@@ -314,68 +318,101 @@ Future buildDepositMoneyModal(BuildContext context) {
       ),
       titlePadding: const EdgeInsets.all(20),
       contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const TextField(
-            textInputAction: TextInputAction.next,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: 'Montant',
-            ),
-          ),
-          const TextField(
-            textInputAction: TextInputAction.done,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: 'Numero de telephone',
-            ),
-          ),
-          const SizedBox(height: 20),
-          Row(
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.red.shade300),
-                  ),
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Fermer'),
+              TextFormField(
+                textInputAction: TextInputAction.next,
+                keyboardType: TextInputType.number,
+                onChanged: (String value) {
+                  if (value.isNotEmpty) {
+                    amount = int.parse(value);
+                  }
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Montant',
                 ),
+                validator: (String? amount) {
+                  if (amount == null || amount.isEmpty) {
+                    return 'Please enter an amount';
+                  }
+                  return null;
+                },
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(appBgColorPrimary),
-                  ),
-                  onPressed: () {
-                    context.read<FirestoreProvider>().deposit(
-                          firebaseAuth.currentUser!.uid,
-                          0,
-                          0,
-                        );
-                  },
-                  child: const Text('Deposer'),
+              TextFormField(
+                textInputAction: TextInputAction.done,
+                onChanged: (String value) {
+                  if (value.isNotEmpty) {
+                    phone = int.parse(value);
+                  }
+                },
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Numero de telephone',
                 ),
+                validator: (String? phone) {
+                  if (phone == null || phone.isEmpty) {
+                    return 'Please enter a valid phone';
+                  }
+                  if (phone.length < 9) {
+                    return 'Phone number must be 9 digits';
+                  }
+                  if (!phone.startsWith('6')) {
+                    return 'Phone number must start with 6';
+                  }
+
+                  return null;
+                },
               ),
             ],
-          )
-        ],
+          ),
+        ),
       ),
+      actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      actions: [
+        ElevatedButton(
+          style: ButtonStyle(
+            backgroundColor:
+                MaterialStateProperty.all<Color>(Colors.red.shade300),
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Fermer'),
+        ),
+        ElevatedButton(
+          style: ButtonStyle(
+            backgroundColor:
+                MaterialStateProperty.all<Color>(appBgColorPrimary),
+          ),
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              context.read<FirestoreProvider>().deposit(
+                    firebaseAuth.currentUser!.uid,
+                    amount,
+                    phone,
+                  );
+              Navigator.of(context).pop();
+            }
+          },
+          child: const Text('Deposer'),
+        ),
+      ],
     ),
   );
 }
 
 Future buildRequestMoneyModal(BuildContext context) {
+  final _formKey = GlobalKey<FormState>();
   List<DropdownMenuItem<String>> menuItems = [
     const DropdownMenuItem(value: "Orange", child: Text("Orange")),
     const DropdownMenuItem(value: "MTN", child: Text("MTN")),
   ];
 
+  int amount = 0;
+  int phone = 0;
   String selectedValue = "Orange";
 
   return showModal(
@@ -395,75 +432,109 @@ Future buildRequestMoneyModal(BuildContext context) {
           style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
         ),
         titlePadding: const EdgeInsets.all(20),
-        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+        contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+        content: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Expanded(child: Text('Recevoir dans:')),
-                DropdownButton(
-                  value: selectedValue,
-                  items: menuItems,
-                  onChanged: (String? value) {
-                    if (value != null && selectedValue != value) {
-                      selectedValue = value;
-                      setState(() {});
-                    }
-                  },
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Expanded(child: Text('Recevoir dans:')),
+                        DropdownButton(
+                          value: selectedValue,
+                          items: menuItems,
+                          onChanged: (String? value) {
+                            if (value != null && selectedValue != value) {
+                              selectedValue = value;
+                              setState(() {});
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    TextFormField(
+                      textInputAction: TextInputAction.next,
+                      keyboardType: TextInputType.number,
+                      onChanged: (String value) {
+                        if (value.isNotEmpty) {
+                          amount = int.parse(value);
+                        }
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Montant',
+                      ),
+                      validator: (String? amount) {
+                        if (amount == null || amount.isEmpty) {
+                          return 'Please enter an amount';
+                        }
+                        return null;
+                      },
+                    ),
+                    TextFormField(
+                      textInputAction: TextInputAction.done,
+                      keyboardType: TextInputType.number,
+                      onChanged: (String value) {
+                        if (value.isNotEmpty) {
+                          phone = int.parse(value);
+                        }
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Numero de telephone',
+                      ),
+                      validator: (String? phone) {
+                        if (phone == null || phone.isEmpty) {
+                          return 'Please enter a valid phone';
+                        }
+                        if (phone.length < 9) {
+                          return 'Phone number must be 9 digits';
+                        }
+                        if (!phone.startsWith('6')) {
+                          return 'Phone number must start with 6';
+                        }
+
+                        return null;
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
-            const TextField(
-              textInputAction: TextInputAction.next,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Montant',
-              ),
-            ),
-            const TextField(
-              textInputAction: TextInputAction.done,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Numero de telephone',
-              ),
-            ),
-            const SizedBox(height: 20),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor:
-                          MaterialStateProperty.all<Color>(Colors.red.shade300),
-                    ),
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Fermer'),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    style: ButtonStyle(
-                      backgroundColor:
-                          MaterialStateProperty.all<Color>(appBgColorPrimary),
-                    ),
-                    onPressed: () {
-                      context.read<FirestoreProvider>().requestMoney(
-                            firebaseAuth.currentUser!.uid,
-                            0,
-                            0,
-                            selectedValue,
-                          );
-                    },
-                    child: const Text('Demander'),
-                  ),
-                ),
-              ],
-            )
-          ],
+          ),
         ),
+        actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+        actions: [
+          ElevatedButton(
+            style: ButtonStyle(
+              backgroundColor:
+                  MaterialStateProperty.all<Color>(Colors.red.shade300),
+            ),
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Fermer'),
+          ),
+          ElevatedButton(
+            style: ButtonStyle(
+              backgroundColor:
+                  MaterialStateProperty.all<Color>(appBgColorPrimary),
+            ),
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                context.read<FirestoreProvider>().requestMoney(
+                      firebaseAuth.currentUser!.uid,
+                      amount,
+                      phone,
+                      selectedValue,
+                    );
+                Navigator.of(context).pop();
+              }
+            },
+            child: const Text('Demander'),
+          ),
+        ],
       ),
     ),
   );

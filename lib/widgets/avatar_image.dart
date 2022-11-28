@@ -14,6 +14,7 @@ class AvatarImage extends StatelessWidget {
       this.borderColor,
       this.trBackground = false,
       this.isSVG = true,
+      this.isAsset = false,
       this.radius = 50});
 
   final String name;
@@ -24,6 +25,7 @@ class AvatarImage extends StatelessWidget {
   final Color? bgColor;
   final bool trBackground;
   final bool isSVG;
+  final bool isAsset;
   final double radius;
 
   @override
@@ -60,7 +62,10 @@ class AvatarImage extends StatelessWidget {
                   offset: const Offset(1, 1), // changes position of shadow
                 ),
               ],
-              image: DecorationImage(image: NetworkImage(name), fit: BoxFit.cover),
+              image: isAsset
+                  ? DecorationImage(image: AssetImage(name), fit: BoxFit.cover)
+                  : DecorationImage(
+                      image: NetworkImage(name), fit: BoxFit.cover),
             ),
           );
   }
