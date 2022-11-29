@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cron/cron.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:microtest/api/api_service.dart';
 import 'package:microtest/common/constant.dart';
 
@@ -11,8 +13,8 @@ class FirestoreProvider {
   FirestoreProvider(this.db);
 
   // REQUEST MONEY METHOD
-  Future<void> requestMoney(
-      String userId, int amount, int phone, String provider) async {
+  Future<void> requestMoney(BuildContext context, String userId, int amount,
+      int phone, String provider) async {
     const maxAmount = 10000;
 
     // get current balance
@@ -20,18 +22,6 @@ class FirestoreProvider {
 
     if (amount < maxAmount) {
       if (amount < currentBalance) {
-        // make payment
-        var data = {
-          "amount": "$amount",
-          "from": "237$phone",
-          "description": "Test",
-          "external_reference": DateTime.now().toIso8601String()
-        };
-        var paymentResponse = await ApiService.makePayment(data);
-
-        await ApiService.getPaymentStatus(paymentResponse['reference'])
-            .then((response) => {});
-
         final newBalance = currentBalance - amount;
 
         // process transaction and update user balance
@@ -63,22 +53,68 @@ class FirestoreProvider {
   }
 
   // DEPOSIT MONEY
-  Future<void> deposit(String userId, int amount, int phone) async {
-    // get current balance
-    var currentBalance = await getBalance(userId);
+  Future<void> deposit(BuildContext context,
+      {required String userId, required int amount, required int phone}) async {
+    var cron = Cron();
 
-    final newBalance = currentBalance + amount;
+    // make payment
+    var data = {
+      "amount": "$amount",
+      "from": "237$phone",
+      "currency": "XAF",
+      "description": "Test",
+      "external_reference": DateTime.now().toIso8601String()
+    };
+    var paymentResponse = await ApiService.makePayment(context, data);
 
-    await updateBalance(userId, newBalance);
+    // Check transaction status and update account
+    cron.schedule(Schedule.parse('*/1 * * * *'), () async {
+      if (kDebugMode) {
+        print('every minutes');
+      }
 
-    await addTransaction(userId, {
-      'amount': amount,
-      'phone': phone,
-      'date': DateTime.now(),
-      'status': 'complete',
-      'provider': '',
-      'provider_logo': '',
-      'type': 'cashint',
+      print("########################## statusResponse['status']");
+      var statusResponse =
+          await ApiService.getPaymentStatus(paymentResponse['reference']);
+      print("########################## statusResponse");
+      print(statusResponse);
+
+      print("########################## status");
+      print(statusResponse['status']);
+
+      // get current balance
+      var currentBalance = await getBalance(userId);
+      var newAmount = int.parse(statusResponse['amount']);
+      final newBalance = currentBalance + newAmount;
+
+      if (statusResponse['status'] == 'SUCCESSFUL') {
+        print("########################## status SUCCESSFUL");
+        await updateBalance(userId, newBalance);
+        await addTransaction(userId, {
+          'amount': newAmount,
+          'phone': phone,
+          'date': DateTime.now(),
+          'status': 'complete',
+          'provider': statusResponse['operator'],
+          'provider_logo': '',
+          'type': 'cashint',
+        });
+        cron.close();
+      }
+
+      if (statusResponse['status'] == 'FAILED') {
+        print("########################## status FAILED");
+        await addTransaction(userId, {
+          'amount': amount,
+          'phone': phone,
+          'date': DateTime.now(),
+          'status': 'failed',
+          'provider': statusResponse['operator'],
+          'provider_logo': '',
+          'type': 'cashint',
+        });
+        await cron.close();
+      }
     });
   }
 
@@ -95,11 +131,6 @@ class FirestoreProvider {
   // GET BALANCE METHOD
   Future<int> getBalance(String userId) async {
     final response = await db.collection('users').doc(userId).get();
-
-    if (kDebugMode) {
-      print(response);
-    }
-
     return response['balance'] as int;
   }
 

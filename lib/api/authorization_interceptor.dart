@@ -19,11 +19,12 @@ class AuthorizationInterceptor implements InterceptorContract {
       // Clear previous header and update it with updated token
       data.headers.clear();
 
-      data.headers['authorization'] = 'Bearer ${token!}';
+      data.headers['authorization'] = 'Token ${token!}';
       data.headers['content-type'] = 'application/json';
     } catch (e) {
       if (kDebugMode) {
-        print(e);
+        print('catch on http interceptor request');
+        print(e.toString());
       }
     }
 

@@ -4,7 +4,6 @@ import 'package:microtest/common/constant.dart';
 import 'package:microtest/providers/firestore.dart';
 import 'package:provider/provider.dart';
 
-import '../api/api_service.dart';
 import '../theme/colors.dart';
 
 class BalanceCard extends StatelessWidget {
@@ -20,10 +19,7 @@ class BalanceCard extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         GestureDetector(
-          // onTap: onTap,
-          onTap: () async {
-            await ApiService.refreshToken();
-          },
+          onTap: onTap,
           child: Container(
             height: 120,
             width: double.infinity,
@@ -62,7 +58,7 @@ class BalanceCard extends StatelessWidget {
                   stream: context.read<FirestoreProvider>().getUserDoc(userId),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
-                      return const Text('data');
+                      return const CircularProgressIndicator();
                     }
                     return Text(
                       "${snapshot.data!['balance']} FCFA",

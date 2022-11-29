@@ -1,8 +1,7 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:hive/hive.dart';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_interceptor/http/intercepted_client.dart';
 import 'package:microtest/common/constant.dart';
@@ -20,40 +19,39 @@ class ApiBaseHelper {
 
     try {
       //Request with interceptor client
-      response = await client.get(Uri.parse('$baseUrl$endPoint'),
-          headers: _getHerders());
+      response = await client.get(Uri.parse('$baseUrl$endPoint'));
 
       return _returnResponse(response);
-    } on SocketException {
-      //No internet connection
     } catch (e) {
       if (kDebugMode) {
         print('catch on http Get request');
+        print(e.toString());
       }
     }
   }
 
   static Future<dynamic> httpPostRequest(
-      String endPoint, Map<String, dynamic> data) async {
+      BuildContext context, String endPoint, Map<String, dynamic> data) async {
     http.Response response;
 
     try {
       //Request with interceptor client
       response = await client.post(
         Uri.parse('$baseUrl$endPoint'),
-        headers: _getHerders(),
         body: jsonEncode(data),
       );
-
+      // if (context.loaderOverlay.visible) {
+      //   context.loaderOverlay.hide();
+      // }
       return _returnResponse(response);
-    } on SocketException {
-      // no internet message
     } catch (e) {
       if (kDebugMode) {
         print('catch on http Post request');
-        print(Hive.box(userBoxName).get('token', defaultValue: null));
+        print(e.toString());
       }
-      print(e.toString());
+      // if (context.loaderOverlay.visible) {
+      //   context.loaderOverlay.hide();
+      // }
     }
   }
 
@@ -80,15 +78,5 @@ class ApiBaseHelper {
       // throw FetchDataException(
       //     jsonResponse['message'] ?? AppConstants.exceptionMessage);
     }
-  }
-
-  static Map<String, String> _getHerders() {
-    var token =
-        Hive.box(userBoxName).get('token', defaultValue: null) as String?;
-
-    return {
-      //'Content-type': 'application/json',
-      'Authorization': 'Bearer $token',
-    };
   }
 }

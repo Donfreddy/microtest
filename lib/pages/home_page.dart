@@ -28,9 +28,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       // appBar: getAppBar(),
-      body: LoaderOverlay(
-        child: getBody(),
-      ),
+      body: getBody(),
     );
   }
 
@@ -111,68 +109,71 @@ class _HomePageState extends State<HomePage> {
   }
 
   getBody() {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          getAppBar(),
-          const SizedBox(
-            height: 25,
-          ),
-          Padding(
-              padding: const EdgeInsets.only(left: 15, right: 15),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  BalanceCard(onTap: () => buildDepositMoneyModal(context)),
-                  Positioned(
-                      top: 100,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                          padding: const EdgeInsets.all(5),
-                          decoration: BoxDecoration(
-                              color: secondary,
-                              shape: BoxShape.circle,
-                              border: Border.all()),
-                          child: const Icon(Icons.add)))
-                ],
-              )),
-          const SizedBox(
-            height: 35,
-          ),
-          getActions(),
-          const SizedBox(
-            height: 25,
-          ),
-          Container(
-              padding: const EdgeInsets.only(left: 20, right: 15),
-              alignment: Alignment.centerLeft,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "Transactions",
-                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-                  ),
-                  Expanded(
-                      child: Container(
-                          alignment: Alignment.centerRight,
-                          child: const Text(
-                            "Today",
-                            style: TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w500),
-                          ))),
-                  const Icon(Icons.expand_more_rounded),
-                ],
-              )),
-          const SizedBox(
-            height: 15,
-          ),
-          Padding(
-            padding: const EdgeInsets.only(left: 15),
-            child: getTransactions(),
-          ),
-        ],
+    return LoaderOverlay(
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            getAppBar(),
+            const SizedBox(
+              height: 25,
+            ),
+            Padding(
+                padding: const EdgeInsets.only(left: 15, right: 15),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    BalanceCard(onTap: () => buildDepositMoneyModal(context)),
+                    Positioned(
+                        top: 100,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                            padding: const EdgeInsets.all(5),
+                            decoration: BoxDecoration(
+                                color: secondary,
+                                shape: BoxShape.circle,
+                                border: Border.all()),
+                            child: const Icon(Icons.add)))
+                  ],
+                )),
+            const SizedBox(
+              height: 35,
+            ),
+            getActions(),
+            const SizedBox(
+              height: 25,
+            ),
+            Container(
+                padding: const EdgeInsets.only(left: 20, right: 15),
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Transactions",
+                      style:
+                          TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+                    ),
+                    Expanded(
+                        child: Container(
+                            alignment: Alignment.centerRight,
+                            child: const Text(
+                              "Today",
+                              style: TextStyle(
+                                  fontSize: 14, fontWeight: FontWeight.w500),
+                            ))),
+                    const Icon(Icons.expand_more_rounded),
+                  ],
+                )),
+            const SizedBox(
+              height: 15,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 15),
+              child: getTransactions(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -391,14 +392,15 @@ Future buildDepositMoneyModal(BuildContext context) {
                 MaterialStateProperty.all<Color>(appBgColorPrimary),
           ),
           onPressed: () {
-            if (!_formKey.currentState!.validate()) {
+            if (_formKey.currentState!.validate()) {
               context.read<FirestoreProvider>().deposit(
-                    firebaseAuth.currentUser!.uid,
-                    amount,
-                    phone,
+                    context,
+                    userId: firebaseAuth.currentUser!.uid,
+                    amount: amount,
+                    phone: phone,
                   );
               Navigator.of(context).pop();
-              context.loaderOverlay.show();
+              // context.loaderOverlay.show();
             }
           },
           child: const Text('Deposer'),
@@ -528,12 +530,14 @@ Future buildRequestMoneyModal(BuildContext context) {
             onPressed: () {
               if (_formKey.currentState!.validate()) {
                 context.read<FirestoreProvider>().requestMoney(
+                      context,
                       firebaseAuth.currentUser!.uid,
                       amount,
                       phone,
                       selectedValue,
                     );
                 Navigator.of(context).pop();
+                context.loaderOverlay.show();
               }
             },
             child: const Text('Demander'),
