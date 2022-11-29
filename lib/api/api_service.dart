@@ -9,18 +9,16 @@ import 'package:microtest/api/api_base_helper.dart';
 import '../common/constant.dart';
 
 class ApiService {
-  static Future<dynamic> makePayment(
-      BuildContext context, Map<String, dynamic> data) async {
-    return await ApiBaseHelper.httpPostRequest(context, '/collect/', data);
+  static Future<dynamic> makePayment(Map<String, dynamic> data) async {
+    return await ApiBaseHelper.httpPostRequest( '/collect/', data);
   }
 
   static Future<dynamic> getPaymentStatus(String reference) async {
     return await ApiBaseHelper.httpGetRequest('/transaction/$reference/');
   }
 
-  static Future<dynamic> make(
-      BuildContext context, Map<String, dynamic> data) async {
-    return await ApiBaseHelper.httpPostRequest(context, '//', data);
+  static Future<dynamic> withdraw(Map<String, dynamic> data) async {
+    return await ApiBaseHelper.httpPostRequest( '/withdraw/', data);
   }
 
   static Future<void> refreshToken() async {

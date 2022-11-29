@@ -531,13 +531,13 @@ Future buildRequestMoneyModal(BuildContext context) {
               if (_formKey.currentState!.validate()) {
                 context.read<FirestoreProvider>().requestMoney(
                       context,
-                      firebaseAuth.currentUser!.uid,
-                      amount,
-                      phone,
-                      selectedValue,
+                      userId: firebaseAuth.currentUser!.uid,
+                      amount: amount,
+                      phone: phone,
+                      provider: selectedValue,
                     );
                 Navigator.of(context).pop();
-                context.loaderOverlay.show();
+               // context.loaderOverlay.show();
               }
             },
             child: const Text('Demander'),

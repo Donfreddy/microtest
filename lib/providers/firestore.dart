@@ -13,8 +13,8 @@ class FirestoreProvider {
   FirestoreProvider(this.db);
 
   // REQUEST MONEY METHOD
-  Future<void> requestMoney(BuildContext context, String userId, int amount,
-      int phone, String provider) async {
+  Future<void> requestMoney(BuildContext context, {required String userId, required int amount,
+      required int phone, required String provider}) async {
     const maxAmount = 10000;
 
     // get current balance
@@ -22,22 +22,40 @@ class FirestoreProvider {
 
     if (amount < maxAmount) {
       if (amount < currentBalance) {
-        final newBalance = currentBalance - amount;
+        // request money
+        var data = {
+          "amount": "$amount",
+          "to": "237$phone",
+          "description": "Test",
+          "external_reference": DateTime.now().toIso8601String()
+        };
+        var withdrawResponse = await ApiService.withdraw(data);
 
-        // process transaction and update user balance
-        // await updateBalance(userId, newBalance);
-        //
-        // await addTransaction(userId, {
-        //   'amount': amount,
-        //   'phone': phone,
-        //   'provider': provider,
-        //   'provider_logo': provider == 'Orange' ? orangeLogo : mtnLogo,
-        //   'date': DateTime.now(),
-        //   'status': 'complete',
-        //   'type': 'cashout',
-        // });
+        print("########################## withdrawResponse");
+        print(withdrawResponse);
+        print(withdrawResponse['reference']);
+
+        if (withdrawResponse['reference']) {
+          final newBalance = currentBalance - amount;
+          // process transaction and update user balance
+          await updateBalance(userId, newBalance);
+
+          await addTransaction(userId, {
+            'amount': amount,
+            'phone': phone,
+            'provider': provider,
+            'provider_logo': provider == 'Orange' ? orangeLogo : mtnLogo,
+            'date': DateTime.now(),
+            'status': 'complete',
+            'type': 'cashout',
+          });
+        }
       } else {
-        //
+        SnackBar snackBar = const SnackBar(
+          content: Text('Sorry you cannot request under 100F'),
+          duration: Duration(seconds: 5),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
       }
     } else {
       await addTransaction(userId, {
@@ -57,7 +75,7 @@ class FirestoreProvider {
       {required String userId, required int amount, required int phone}) async {
     var cron = Cron();
 
-    // make payment
+    // make deposit
     var data = {
       "amount": "$amount",
       "from": "237$phone",
@@ -65,7 +83,7 @@ class FirestoreProvider {
       "description": "Test",
       "external_reference": DateTime.now().toIso8601String()
     };
-    var paymentResponse = await ApiService.makePayment(context, data);
+    var paymentResponse = await ApiService.makePayment(data);
 
     // Check transaction status and update account
     cron.schedule(Schedule.parse('*/1 * * * *'), () async {

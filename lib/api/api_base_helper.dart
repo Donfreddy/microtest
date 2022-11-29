@@ -30,8 +30,7 @@ class ApiBaseHelper {
     }
   }
 
-  static Future<dynamic> httpPostRequest(
-      BuildContext context, String endPoint, Map<String, dynamic> data) async {
+  static Future<dynamic> httpPostRequest(String endPoint, Map<String, dynamic> data) async {
     http.Response response;
 
     try {
@@ -40,18 +39,12 @@ class ApiBaseHelper {
         Uri.parse('$baseUrl$endPoint'),
         body: jsonEncode(data),
       );
-      // if (context.loaderOverlay.visible) {
-      //   context.loaderOverlay.hide();
-      // }
       return _returnResponse(response);
     } catch (e) {
       if (kDebugMode) {
         print('catch on http Post request');
         print(e.toString());
       }
-      // if (context.loaderOverlay.visible) {
-      //   context.loaderOverlay.hide();
-      // }
     }
   }
 
