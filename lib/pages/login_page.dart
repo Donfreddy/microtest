@@ -4,6 +4,7 @@ import 'package:loader_overlay/loader_overlay.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/authentication.dart';
+import '../theme/colors.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -16,42 +17,139 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isObscure = true;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: appBgColorPrimary,
       body: LoaderOverlay(
         child: SingleChildScrollView(
+          reverse: true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _logoText(),
+              const SizedBox(height: 40),
+              Center(
+                child: Container(
+                  height: 200,
+                  alignment: Alignment.center,
+                  child: Text(
+                    "Microtest",
+                    style: GoogleFonts.nunito(
+                      textStyle: const TextStyle(
+                        fontSize: 34,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        letterSpacing: 10,
+                      ),
+                    ),
+                    // textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
               Form(
-                  key: _formKey,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                key: _formKey,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     children: [
-                      _inputField(
-                          _emailController,
-                          const Icon(
-                            Icons.person_outline,
-                            size: 30,
-                            color: Color(0xffA6B0BD),
+                      Container(
+                        height: 140,
+                        width: 530,
+                        decoration: const BoxDecoration(
+                            borderRadius: BorderRadius.all(Radius.circular(20)),
+                            color: Colors.white),
+                        child: Column(
+                          children: <Widget>[
+                            TextFormField(
+                              controller: _emailController,
+                              textInputAction: TextInputAction.next,
+                              keyboardType: TextInputType.emailAddress,
+                              style: GoogleFonts.montserrat(
+                                textStyle: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xff000912),
+                                ),
+                              ),
+                              decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: "Email Address",
+                                  contentPadding: EdgeInsets.all(20)),
+                              onEditingComplete: () =>
+                                  FocusScope.of(context).nextFocus(),
+                            ),
+                            const Divider(thickness: 2),
+                            TextFormField(
+                              controller: _passwordController,
+                              textInputAction: TextInputAction.done,
+                              keyboardType: TextInputType.text,
+                              style: GoogleFonts.montserrat(
+                                textStyle: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xff000912),
+                                ),
+                              ),
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                hintText: "Password",
+                                contentPadding: const EdgeInsets.all(20),
+                                // Adding the visibility icon to toggle visibility of the password field
+                                suffixIcon: IconButton(
+                                  icon: Icon(_isObscure
+                                      ? Icons.visibility_off
+                                      : Icons.visibility),
+                                  onPressed: () {
+                                    setState(() {
+                                      _isObscure = !_isObscure;
+                                    });
+                                  },
+                                ),
+                              ),
+                              obscureText: _isObscure,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                      Container(
+                        width: MediaQuery.of(context).size.width / 0.4,
+                        height: 60,
+                        padding: const EdgeInsets.only(top: 00),
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            shape: const StadiumBorder(),
                           ),
-                          "Username",
-                          false),
-                      _inputField(
-                          _passwordController,
-                          const Icon(
-                            Icons.lock_outline,
-                            size: 30,
-                            color: Color(0xffA6B0BD),
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              context.loaderOverlay.show();
+                              context.read<AuthenticationProvider>().signIn(
+                                  context,
+                                  email: _emailController.text.trim(),
+                                  password: _passwordController.text.trim());
+                            }
+                          },
+                          child: Text(
+                            "SIGN IN",
+                            style: GoogleFonts.montserrat(
+                              textStyle: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: 3,
+                              ),
+                            ),
                           ),
-                          "Password",
-                          true),
-                      _loginBtn()
+                        ),
+                      ),
                     ],
-                  )),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
             ],
           ),
         ),
