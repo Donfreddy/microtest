@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cron/cron.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:microtest/api/api_service.dart';
@@ -13,8 +14,11 @@ class FirestoreProvider {
   FirestoreProvider(this.db);
 
   // REQUEST MONEY METHOD
-  Future<void> requestMoney(BuildContext context, {required String userId, required int amount,
-      required int phone, required String provider}) async {
+  Future<void> requestMoney(BuildContext context,
+      {required String userId,
+      required int amount,
+      required int phone,
+      required String provider}) async {
     const maxAmount = 10000;
 
     // get current balance
@@ -35,7 +39,7 @@ class FirestoreProvider {
         print(withdrawResponse);
         print(withdrawResponse['reference']);
 
-        if (withdrawResponse['reference']) {
+        if (withdrawResponse['reference'] != null) {
           final newBalance = currentBalance - amount;
           // process transaction and update user balance
           await updateBalance(userId, newBalance);
@@ -73,8 +77,6 @@ class FirestoreProvider {
   // DEPOSIT MONEY
   Future<void> deposit(BuildContext context,
       {required String userId, required int amount, required int phone}) async {
-    var cron = Cron();
-
     // make deposit
     var data = {
       "amount": "$amount",
@@ -85,8 +87,7 @@ class FirestoreProvider {
     };
     var paymentResponse = await ApiService.makePayment(data);
 
-    // Check transaction status and update account
-    cron.schedule(Schedule.parse('*/1 * * * *'), () async {
+    Timer.periodic(const Duration(seconds: 20), (timer) async {
       if (kDebugMode) {
         print('every minutes');
       }
@@ -94,46 +95,49 @@ class FirestoreProvider {
       print("########################## statusResponse['status']");
       var statusResponse =
           await ApiService.getPaymentStatus(paymentResponse['reference']);
-      print("########################## statusResponse");
-      print(statusResponse);
 
-      print("########################## status");
-      print(statusResponse['status']);
+      if (statusResponse != null) {
+        print("########################## status");
+        print(statusResponse['status']);
 
-      // get current balance
-      var currentBalance = await getBalance(userId);
-      var newAmount = int.parse(statusResponse['amount']);
-      final newBalance = currentBalance + newAmount;
+        // get current balance
+        var currentBalance = await getBalance(userId);
+        // var amountDouble = statusResponse['amount'] as String;
+        // var newAmount = int.parse(amountDouble.toString());
+        final newBalance = currentBalance + amount;
 
-      if (statusResponse['status'] == 'SUCCESSFUL') {
-        print("########################## status SUCCESSFUL");
-        await updateBalance(userId, newBalance);
-        await addTransaction(userId, {
-          'amount': newAmount,
-          'phone': phone,
-          'date': DateTime.now(),
-          'status': 'complete',
-          'provider': statusResponse['operator'],
-          'provider_logo': '',
-          'type': 'cashint',
-        });
-        cron.close();
-      }
+        if (statusResponse['status'] == 'SUCCESSFUL') {
+          print("########################## status SUCCESSFUL");
+          await updateBalance(userId, newBalance);
+          await addTransaction(userId, {
+            'amount': newBalance,
+            'phone': phone,
+            'date': DateTime.now(),
+            'status': 'complete',
+            'provider': statusResponse['operator'],
+            'provider_logo': '',
+            'type': 'cashint',
+          });
+          timer.cancel();
+        }
 
-      if (statusResponse['status'] == 'FAILED') {
-        print("########################## status FAILED");
-        await addTransaction(userId, {
-          'amount': amount,
-          'phone': phone,
-          'date': DateTime.now(),
-          'status': 'failed',
-          'provider': statusResponse['operator'],
-          'provider_logo': '',
-          'type': 'cashint',
-        });
-        await cron.close();
+        if (statusResponse['status'] == 'FAILED') {
+          print("########################## status FAILED");
+          await addTransaction(userId, {
+            'amount': amount,
+            'phone': phone,
+            'date': DateTime.now(),
+            'status': 'failed',
+            'provider': statusResponse['operator'],
+            'provider_logo': '',
+            'type': 'cashint',
+          });
+          timer.cancel();
+        }
       }
     });
+
+    // Check transaction status and update account
   }
 
   // GET ALL TRANSACTIONS METHOD
@@ -149,7 +153,7 @@ class FirestoreProvider {
   // GET BALANCE METHOD
   Future<int> getBalance(String userId) async {
     final response = await db.collection('users').doc(userId).get();
-    return response['balance'] as int;
+    return int.parse(response['balance']);
   }
 
   // GET USER DocumentSnapshot METHOD

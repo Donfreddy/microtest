@@ -27,7 +27,6 @@ class AuthorizationInterceptor implements InterceptorContract {
         print(e.toString());
       }
     }
-
     return data;
   }
 

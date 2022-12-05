@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:animations/animations.dart';
 import 'package:badges/badges.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -537,7 +539,10 @@ Future buildRequestMoneyModal(BuildContext context) {
                       provider: selectedValue,
                     );
                 Navigator.of(context).pop();
-               // context.loaderOverlay.show();
+                // context.loaderOverlay.show();
+                // Timer(Duration(seconds: 20), () {
+                //   context.loaderOverlay.hide();
+                // });
               }
             },
             child: const Text('Demander'),
