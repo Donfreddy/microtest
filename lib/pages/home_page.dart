@@ -25,9 +25,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: Colors.transparent,
       // appBar: getAppBar(),
       body: getBody(),
@@ -124,7 +127,9 @@ class _HomePageState extends State<HomePage> {
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    BalanceCard(onTap: () => buildDepositMoneyModal(context)),
+                    BalanceCard(
+                        onTap: () => buildDepositMoneyModal(
+                            _scaffoldKey.currentContext!)),
                     Positioned(
                         top: 100,
                         left: 0,
@@ -202,7 +207,7 @@ class _HomePageState extends State<HomePage> {
             title: "Request",
             icon: Icons.arrow_circle_down_rounded,
             bgColor: yellow,
-            onTap: () => buildRequestMoneyModal(context),
+            onTap: () => buildRequestMoneyModal(_scaffoldKey.currentContext!),
           ),
         ),
         const SizedBox(
@@ -430,8 +435,8 @@ Future buildRequestMoneyModal(BuildContext context) {
         milliseconds: 300,
       ),
     ),
-    builder: (context) => StatefulBuilder(
-      builder: (context, setState) => AlertDialog(
+    builder: (ctx) => StatefulBuilder(
+      builder: (ctx2, setState) => AlertDialog(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12.0),
         ),
@@ -521,7 +526,7 @@ Future buildRequestMoneyModal(BuildContext context) {
               backgroundColor:
                   MaterialStateProperty.all<Color>(Colors.red.shade300),
             ),
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(ctx2).pop(),
             child: const Text('Fermer'),
           ),
           ElevatedButton(
@@ -538,7 +543,7 @@ Future buildRequestMoneyModal(BuildContext context) {
                       phone: phone,
                       provider: selectedValue,
                     );
-                Navigator.of(context).pop();
+                Navigator.of(ctx2).pop();
                 // context.loaderOverlay.show();
                 // Timer(Duration(seconds: 20), () {
                 //   context.loaderOverlay.hide();

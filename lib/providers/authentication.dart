@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:loader_overlay/loader_overlay.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class AuthenticationProvider {
   final FirebaseAuth firebaseAuth;
@@ -22,11 +24,14 @@ class AuthenticationProvider {
       context.loaderOverlay.hide();
     } on FirebaseAuthException catch (e) {
       context.loaderOverlay.hide();
-      SnackBar snackBar = SnackBar(
-        content: Text(e.message ?? e.code),
-        duration: const Duration(seconds: 5),
+      showTopSnackBar(
+        context,
+        CustomSnackBar.error(
+          message: e.message ?? e.code,
+          textStyle: const TextStyle().copyWith(fontSize: 12),
+          messagePadding: const EdgeInsets.symmetric(horizontal: 10),
+        ),
       );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
   }
 

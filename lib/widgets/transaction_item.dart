@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../theme/colors.dart';
 import 'avatar_image.dart';
@@ -81,19 +82,20 @@ class TransactionItem extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
                           Text(
-                            "${DateTime.parse(data['date'].toDate().toString())}"
-                                .split(" ")[0],
+                            DateFormat.yMd().add_Hms().format(DateTime.parse(
+                                data['date'].toDate().toString())),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                                 fontSize: 12, color: Colors.grey),
                           ),
                           Text(
-                            "${data['status']}",
+                            "${data['status']}".toUpperCase(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 12, color: Colors.grey),
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: getStatusColor(data['status'])),
                           ),
                           Container(
                             child: data['type'] == 'cashint'
@@ -117,5 +119,18 @@ class TransactionItem extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+Color getStatusColor(String status) {
+  switch (status) {
+    case 'success':
+      return Colors.green;
+    case 'pending':
+      return Colors.cyan;
+    case 'fail':
+      return Colors.red;
+    default:
+      return Colors.orange;
   }
 }
