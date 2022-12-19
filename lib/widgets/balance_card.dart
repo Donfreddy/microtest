@@ -61,7 +61,7 @@ class BalanceCard extends StatelessWidget {
                       return const CircularProgressIndicator();
                     }
                     return Text(
-                      "${snapshot.data!['balance']} FCFA",
+                      "${snapshot.data!['balance']} XAF",
                       style: const TextStyle(
                         color: secondary,
                         fontSize: 18,

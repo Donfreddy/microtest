@@ -319,7 +319,7 @@ Future buildDepositMoneyModal(BuildContext context) {
         milliseconds: 300,
       ),
     ),
-    builder: (context) => AlertDialog(
+    builder: (cxt) => AlertDialog(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12.0),
       ),
@@ -390,7 +390,7 @@ Future buildDepositMoneyModal(BuildContext context) {
             backgroundColor:
                 MaterialStateProperty.all<Color>(Colors.red.shade300),
           ),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.of(cxt).pop(),
           child: const Text('Fermer'),
         ),
         ElevatedButton(
@@ -406,7 +406,7 @@ Future buildDepositMoneyModal(BuildContext context) {
                     amount: amount,
                     phone: phone,
                   );
-              Navigator.of(context).pop();
+              Navigator.of(cxt).pop();
               // context.loaderOverlay.show();
             }
           },

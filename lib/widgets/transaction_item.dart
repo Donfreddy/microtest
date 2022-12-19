@@ -67,7 +67,7 @@ class TransactionItem extends StatelessWidget {
                                       fontWeight: FontWeight.w700))),
                           const SizedBox(width: 5),
                           Text(
-                            '${data['amount']} FCFA',
+                            '${data['amount']} XAF',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
@@ -125,12 +125,12 @@ class TransactionItem extends StatelessWidget {
 Color getStatusColor(String status) {
   switch (status) {
     case 'success':
-      return Colors.green;
+      return green;
     case 'pending':
-      return Colors.cyan;
+      return appBgColorSecondary;
     case 'fail':
-      return Colors.red;
+      return red;
     default:
-      return Colors.orange;
+      return red;
   }
 }

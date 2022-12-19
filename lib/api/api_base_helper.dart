@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:http_interceptor/http/intercepted_client.dart';
 import 'package:microtest/common/constant.dart';
@@ -30,7 +29,8 @@ class ApiBaseHelper {
     }
   }
 
-  static Future<dynamic> httpPostRequest(String endPoint, Map<String, dynamic> data) async {
+  static Future<dynamic> httpPostRequest(
+      String endPoint, Map<String, dynamic> data) async {
     http.Response response;
 
     try {
