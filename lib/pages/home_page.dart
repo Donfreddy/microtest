@@ -197,7 +197,7 @@ class _HomePageState extends State<HomePage> {
           title: "Send",
           icon: Icons.send_rounded,
           bgColor: green,
-          onTap: () {},
+          onTap: () => buildSendMoneyModal(_scaffoldKey.currentContext!),
         )),
         const SizedBox(
           width: 15,
@@ -411,6 +411,113 @@ Future buildDepositMoneyModal(BuildContext context) {
             }
           },
           child: const Text('Deposer'),
+        ),
+      ],
+    ),
+  );
+}
+
+Future buildSendMoneyModal(BuildContext context) {
+  final _formKey = GlobalKey<FormState>();
+  int amount = 0;
+  String accountNumber = '';
+
+  return showModal(
+    context: context,
+    configuration: const FadeScaleTransitionConfiguration(
+      transitionDuration: Duration(
+        milliseconds: 300,
+      ),
+    ),
+    builder: (cxt) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      title: const Text(
+        "Envoyer vers un compte",
+        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
+      ),
+      titlePadding: const EdgeInsets.all(20),
+      contentPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                textInputAction: TextInputAction.next,
+                keyboardType: TextInputType.number,
+                onChanged: (String value) {
+                  if (value.isNotEmpty) {
+                    amount = int.parse(value);
+                  }
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Montant',
+                ),
+                validator: (String? amount) {
+                  if (amount == null || amount.isEmpty) {
+                    return 'Please enter an amount';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                textInputAction: TextInputAction.done,
+                onChanged: (String value) {
+                  if (value.isNotEmpty) {
+                    accountNumber = value;
+                  }
+                },
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Numero de compte',
+                ),
+                validator: (String? phone) {
+                  if (phone == null || phone.isEmpty) {
+                    return 'Please enter a valid account number';
+                  }
+                  if (phone.length < 4) {
+                    return 'Account number must be 4 digits';
+                  }
+
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+      actions: [
+        ElevatedButton(
+          style: ButtonStyle(
+            backgroundColor:
+                MaterialStateProperty.all<Color>(Colors.red.shade300),
+          ),
+          onPressed: () => Navigator.of(cxt).pop(),
+          child: const Text('Fermer'),
+        ),
+        ElevatedButton(
+          style: ButtonStyle(
+            backgroundColor:
+                MaterialStateProperty.all<Color>(appBgColorPrimary),
+          ),
+          onPressed: () {
+            if (_formKey.currentState!.validate()) {
+              context.read<FirestoreProvider>().send(
+                    context,
+                    userId: firebaseAuth.currentUser!.uid,
+                    amount: amount,
+                    accountNumber: accountNumber,
+                  );
+              Navigator.of(cxt).pop();
+              // context.loaderOverlay.show();
+            }
+          },
+          child: const Text('Envoyer'),
         ),
       ],
     ),

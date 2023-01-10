@@ -78,8 +78,7 @@ class FirestoreProvider {
             context.loaderOverlay.hide();
             showTopMessage(
               context,
-              message:
-                  'Oops, quelque chose s\'est mal passé. Veuillez réessayer plus tard',
+              message: 'Oops, Something went wrong. please try again later',
               type: MessageType.error,
             );
             timer.cancel();
@@ -101,14 +100,81 @@ class FirestoreProvider {
         showTopMessage(
           context,
           message:
-              'votre transaction a été initiée et devrait être acceptée dans les plus brefs délais.',
+              'Your transaction has been initiated and should be accepted as soon as possible.',
         );
       }
     } else {
       context.loaderOverlay.hide();
       showTopMessage(
         context,
-        message: 'Votre solde est insuffisant pour effectuer cette transaction',
+        message: 'Your balance is insufficient to complete this transaction',
+        type: MessageType.error,
+      );
+    }
+  }
+
+  // SEND MONEY
+  Future<void> send(
+    BuildContext context, {
+    required String userId,
+    required int amount,
+    required String accountNumber,
+  }) async {
+    context.loaderOverlay.show();
+    bool result = await InternetConnectionChecker().hasConnection;
+
+    if (result == true) {
+      var currentBalance = await getBalance(userId);
+      if (amount < currentBalance) {
+        // get and update beneficial user
+        final data = await getUserByAccountNumber(accountNumber);
+        if (data.size == 0) {
+          context.loaderOverlay.hide();
+          showTopMessage(
+            context,
+            message: "No account was found!",
+            type: MessageType.error,
+          );
+        } else {
+          final newBalance = currentBalance - amount;
+          await updateBalance(userId, newBalance);
+
+          final userBalance = int.parse(data.docs[0].data()['balance']);
+          final newBalance2 = userBalance + amount;
+          await updateBalance(data.docs[0].id, newBalance2);
+
+          await addTransaction({
+            'amount': amount,
+            'phone': data.docs[0].data()['phone_number'],
+            'provider': 'N/A',
+            'provider_logo': '',
+            'date': Timestamp.now(),
+            'status': 'success',
+            'manual_confirm': false,
+            'type': 'cashout',
+            'userId': userId,
+          });
+
+          context.loaderOverlay.hide();
+          showTopMessage(
+            context,
+            message: 'Transaction successful.',
+            type: MessageType.success,
+          );
+        }
+      } else {
+        context.loaderOverlay.hide();
+        showTopMessage(
+          context,
+          message: 'Your balance is insufficient to complete this transaction',
+          type: MessageType.error,
+        );
+      }
+    } else {
+      context.loaderOverlay.hide();
+      showTopMessage(
+        context,
+        message: "No internet connection",
         type: MessageType.error,
       );
     }
@@ -123,7 +189,7 @@ class FirestoreProvider {
   }) async {
     context.loaderOverlay.show();
     bool result = await InternetConnectionChecker().hasConnection;
-    if(result == true) {
+    if (result == true) {
       var paymentResponse = await ApiService.makePayment({
         "amount": "$amount",
         "from": "237$phone",
@@ -155,7 +221,7 @@ class FirestoreProvider {
         showTopMessage(
           context,
           message:
-          "Tapez sur *126# pour MTN ou #150*50# pour ORANGE pour confirmer la transaction.",
+              "Type *126# for MTN or #150*50# for ORANGE to confirm the transaction.",
         );
         Timer.periodic(const Duration(seconds: 10), (timer) async {
           var statusResponse = await ApiService.getPaymentStatus(transactionId);
@@ -169,7 +235,7 @@ class FirestoreProvider {
             await updateTransactionStatus(transactionId, 'success');
             showTopMessage(
               context,
-              message: 'Transaction réussie.',
+              message: 'Transaction successful.',
               type: MessageType.success,
             );
             timer.cancel();
@@ -187,8 +253,7 @@ class FirestoreProvider {
         context.loaderOverlay.hide();
         showTopMessage(
           context,
-          message:
-          "Il s'agit d'un système de démonstration. Le montant maximum est de 100 XAF.",
+          message: "This is a demo system. The maximum amount is 100 XAF.",
           type: MessageType.error,
         );
       }
@@ -196,8 +261,7 @@ class FirestoreProvider {
       context.loaderOverlay.hide();
       showTopMessage(
         context,
-        message:
-       "No internet connection",
+        message: "No internet connection",
         type: MessageType.error,
       );
     }
@@ -237,6 +301,16 @@ class FirestoreProvider {
   // UPDATE BALANCE METHOD
   Future<void> updateBalance(String userId, int newBalance) async {
     await db.collection('users').doc(userId).update({'balance': "$newBalance"});
+  }
+
+  // GET USER BY ACCOUNT NUMBER
+  Future<QuerySnapshot<Map<String, dynamic>>> getUserByAccountNumber(
+      String accountNumber) async {
+    return db
+        .collection('users')
+        .where('account_number', isEqualTo: accountNumber)
+        .limit(1)
+        .get();
   }
 
   // UPDATE TRANSACTION STATUS METHOD
