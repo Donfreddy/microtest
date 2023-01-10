@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:microtest/api/api_service.dart';
 import 'package:microtest/common/constant.dart';
@@ -121,67 +122,82 @@ class FirestoreProvider {
     required int phone,
   }) async {
     context.loaderOverlay.show();
-    var paymentResponse = await ApiService.makePayment({
-      "amount": "$amount",
-      "from": "237$phone",
-      "currency": "XAF",
-      "description": "Test",
-      "external_reference": DateTime.now().toIso8601String()
-    });
-
-    if (paymentResponse != null) {
-      final provider = paymentResponse['operator'];
-      final transactionId = paymentResponse['reference'];
-
-      await addTransaction({
-        'amount': amount,
-        'phone': phone,
-        'provider': provider,
-        'provider_logo': provider == 'Orange' ? orangeLogo : mtnLogo,
-        'date': Timestamp.now(),
-        'status': 'pending',
-        'manual_confirm': true,
-        'type': 'cashout',
-        'userId': userId,
-      }, transactionId: transactionId);
-      context.loaderOverlay.hide();
-      showTopMessage(
-        context,
-        message:
-            "Tapez sur *126# pour MTN ou #150*50# pour ORANGE pour confirmer la transaction.",
-      );
-      Timer.periodic(const Duration(seconds: 10), (timer) async {
-        var statusResponse = await ApiService.getPaymentStatus(transactionId);
-
-        if (statusResponse['status'] == 'SUCCESSFUL') {
-          // get current balance
-          var currentBalance = await getBalance(userId);
-          final newBalance = currentBalance + amount;
-
-          await updateBalance(userId, newBalance);
-          await updateTransactionStatus(transactionId, 'success');
-          showTopMessage(
-            context,
-            message: 'Transaction réussie.',
-            type: MessageType.success,
-          );
-          timer.cancel();
-        } else if (statusResponse['status'] == 'FAILED') {
-          await updateTransactionStatus(transactionId, 'fail');
-          showTopMessage(
-            context,
-            message: 'Transaction échouée.',
-            type: MessageType.error,
-          );
-          timer.cancel();
-        }
+    bool result = await InternetConnectionChecker().hasConnection;
+    if(result == true) {
+      var paymentResponse = await ApiService.makePayment({
+        "amount": "$amount",
+        "from": "237$phone",
+        "currency": "XAF",
+        "description": "Test",
+        "external_reference": DateTime.now().toIso8601String()
       });
+
+      print("### paymentResponse");
+      print(amount);
+      print(paymentResponse);
+
+      if (paymentResponse != null) {
+        final provider = paymentResponse['operator'];
+        final transactionId = paymentResponse['reference'];
+
+        await addTransaction({
+          'amount': amount,
+          'phone': phone,
+          'provider': provider,
+          'provider_logo': provider == 'Orange' ? orangeLogo : mtnLogo,
+          'date': Timestamp.now(),
+          'status': 'pending',
+          'manual_confirm': true,
+          'type': 'cashout',
+          'userId': userId,
+        }, transactionId: transactionId);
+        context.loaderOverlay.hide();
+        showTopMessage(
+          context,
+          message:
+          "Tapez sur *126# pour MTN ou #150*50# pour ORANGE pour confirmer la transaction.",
+        );
+        Timer.periodic(const Duration(seconds: 10), (timer) async {
+          var statusResponse = await ApiService.getPaymentStatus(transactionId);
+
+          if (statusResponse['status'] == 'SUCCESSFUL') {
+            // get current balance
+            var currentBalance = await getBalance(userId);
+            final newBalance = currentBalance + amount;
+
+            await updateBalance(userId, newBalance);
+            await updateTransactionStatus(transactionId, 'success');
+            showTopMessage(
+              context,
+              message: 'Transaction réussie.',
+              type: MessageType.success,
+            );
+            timer.cancel();
+          } else if (statusResponse['status'] == 'FAILED') {
+            await updateTransactionStatus(transactionId, 'fail');
+            showTopMessage(
+              context,
+              message: 'Transaction échouée.',
+              type: MessageType.error,
+            );
+            timer.cancel();
+          }
+        });
+      } else {
+        context.loaderOverlay.hide();
+        showTopMessage(
+          context,
+          message:
+          "Il s'agit d'un système de démonstration. Le montant maximum est de 100 XAF.",
+          type: MessageType.error,
+        );
+      }
     } else {
       context.loaderOverlay.hide();
       showTopMessage(
         context,
         message:
-            "Il s'agit d'un système de démonstration. Le montant maximum est de 100 XAF.",
+       "No internet connection",
         type: MessageType.error,
       );
     }
